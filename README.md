@@ -37,15 +37,6 @@ Both from MedMNIST (`pip install medmnist`). Pre-cleaned, standard splits, no mi
 - Coreset: 50% of data reaches most of the accuracy.
 - PCA: 784→128 dims improves Pneumonia to 0.883.
 
-## Deliverable progress
-| Deliverable | Status |
-|---|---|
-| D1 — EDA, baselines, video | Done |
-| D2 — All methods + report | Done |
-| D3 — Interaction study + improvement | Next |
-| D4 — Final report | Pending |
-| D5 — Presentation | Pending |
-
 ## Baseline papers
 - Han et al. (2016) Deep Compression — ICLR
 - Keskar et al. (2017) On Large-Batch Training — ICLR
