@@ -1,63 +1,55 @@
 # Interactions Between Pruning, Quantization, and Batch Size in MLPs
 
-ML 2026 Course Project — study of how three compression knobs (pruning, quantization, batch size) interact when applied to MLPs, compared against classical ML baselines, on medical image datasets.
+ML 2026 Course Project — a study of how three compression methods (pruning, quantization, batch size) interact when applied to MLPs, compared against classical ML baselines, on medical image datasets.
 
 ## Research questions
-
 1. Does the order of pruning and quantization (prune→quantize vs quantize→prune) change final accuracy at the same compression?
 2. Does the best batch size shift once a model is compressed?
 3. Is there a combined sweet spot that beats any single method alone?
 
 ## Datasets
+| Dataset | Type | Task | Train / Val / Test |
+|---|---|---|---|
+| PneumoniaMNIST | Grayscale 28×28 | Binary | 4708 / 524 / 624 |
+| BloodMNIST | RGB 28×28 | Multi-class (8) | 11959 / 1712 / 3421 |
 
-| Dataset | Type | Task | Size | Train / Val / Test |
-|---|---|---|---|---|
-| PneumoniaMNIST | Grayscale (28×28) | Binary (normal / pneumonia) | 5,856 | 4708 / 524 / 624 |
-| BloodMNIST | RGB (28×28) | Multi-class (8 cell types) | 17,092 | 11959 / 1712 / 3421 |
+Both from MedMNIST (`pip install medmnist`). Pre-cleaned, standard splits, no missing values.
 
-Both from MedMNIST, loaded via `pip install medmnist`. Pre-cleaned, standard splits, no missing values.
+## Methods
+| Type | Model / Method |
+|---|---|
+| Classical | Logistic Regression, Random Forest, RBF SVM |
+| Neural | MLP (512→256, ReLU, dropout) |
+| Compression | Magnitude pruning (+ fine-tune), post-training quantization, coreset selection, PCA |
 
-## Models
-
-| Type | Model | Notes |
+## Results (D2)
+**Classical vs MLP** (test acc / macro-F1):
+| Model | Pneu Acc | Blood Acc |
 |---|---|---|
-| Classical | Random Forest | Fast baseline, no scaling needed |
-| Classical | RBF SVM | Stronger image baseline |
-| Neural | MLP (2 hidden: 512, 256) | ReLU + dropout; the model that gets compressed |
+| Logistic Regression | 0.832 | 0.786 |
+| Random Forest | 0.853 | 0.838 |
+| RBF SVM | 0.857 | 0.853 |
+| MLP | 0.858 ± 0.002 | 0.867 ± 0.002 |
 
-## Current results (D1 baselines)
+**Compression highlights:**
+- Pruning: recovers to baseline even at 90% sparsity after fine-tuning.
+- Quantization: lossless down to 3-bit, breaks at 2-bit.
+- Coreset: 50% of data reaches most of the accuracy.
+- PCA: 784→128 dims improves Pneumonia to 0.883.
 
-| Model | Pneu Acc | Pneu F1 | Blood Acc | Blood F1 |
-|---|---|---|---|---|
-| Random Forest | 0.853 | 0.829 | 0.837 | 0.808 |
-| RBF SVM | 0.854 | 0.829 | 0.847 | 0.823 |
-| MLP (tuned) | 0.851 | 0.825 | 0.862 | 0.846 |
-
-Note: Pneumonia caps ~85% (val/test come from different sources — known distribution shift). Blood MLP is the clear winner on clean data.
+## Deliverable progress
+| Deliverable | Status |
+|---|---|
+| D1 — EDA, baselines, video | Done |
+| D2 — All methods + report | Done |
+| D3 — Interaction study + improvement | Next |
+| D4 — Final report | Pending |
+| D5 — Presentation | Pending |
 
 ## Baseline papers
-
-| Paper | Venue | Topic |
-|---|---|---|
-| Han et al., Learning both Weights and Connections (2015) | NeurIPS | Pruning |
-| Han et al., Deep Compression (2016) | ICLR | Pruning + quantization |
-| Keskar et al., On Large-Batch Training (2017) | ICLR | Batch size |
-
-## Setup
-
-```bash
-pip install -r requirements.txt
-```
+- Han et al. (2016) Deep Compression — ICLR
+- Keskar et al. (2017) On Large-Batch Training — ICLR
+- Yang et al. (2023) MedMNIST v2 — Scientific Data
 
 ## Reproducibility
-
-Fixed seed (42) for numpy and torch. Standardisation computed on train split only. MLP uses validation-based early stopping; best model kept by validation accuracy.
-
-## Repo structure
-
-```
-notebooks/   EDA + experiments
-src/         reusable code
-configs/     hyperparameter YAMLs
-results/     figures and logs
-```
+Fixed seed (42). Standardisation on train split only. MLP uses validation-based early stopping; best model kept by validation accuracy. MLP baseline reported as mean ± std over 3 seeds.
